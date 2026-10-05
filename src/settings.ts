@@ -1,20 +1,6 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, PluginSettingTab, type SettingDefinitionItem } from "obsidian";
 import type CommentBlockPlugin from "./main.ts";
-
-export interface CommentBlockSettings {
-	/** Master toggle for rendering threads. When off, raw tags are left as-is. */
-	enabled: boolean;
-	/** Author name stamped on comments created via the command or Reply button. */
-	username: string;
-	/** Render comment bodies as Markdown (vs. plain text). */
-	renderMarkdown: boolean;
-}
-
-export const DEFAULT_SETTINGS: CommentBlockSettings = {
-	enabled: true,
-	username: "",
-	renderMarkdown: true,
-};
+export { DEFAULT_SETTINGS, normalizeSettings, type CommentBlockSettings } from "./settings-data.ts";
 
 export class CommentBlockSettingTab extends PluginSettingTab {
 	private plugin: CommentBlockPlugin;
@@ -24,43 +10,41 @@ export class CommentBlockSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
-	display(): void {
-		const { containerEl } = this;
-		containerEl.empty();
-
-		new Setting(containerEl)
-			.setName("Enable comment threads")
-			.setDesc("Render <comment> blocks as threaded discussions.")
-			.addToggle((t) =>
-				t.setValue(this.plugin.settings.enabled).onChange(async (v) => {
-					this.plugin.settings.enabled = v;
-					await this.plugin.saveSettings();
-					this.plugin.refreshAll();
-				})
-			);
-
-		new Setting(containerEl)
-			.setName("Your name")
-			.setDesc("Stamped as the author on comments you create.")
-			.addText((t) =>
-				t
-					.setPlaceholder("e.g. alice")
-					.setValue(this.plugin.settings.username)
-					.onChange(async (v) => {
-						this.plugin.settings.username = v.trim();
+	getSettingDefinitions(): SettingDefinitionItem[] {
+		return [
+			{
+				name: "Enable comment threads",
+				desc: "Render comment blocks as threaded discussions.",
+				render: (setting) => {
+					setting.addToggle((t) => t.setValue(this.plugin.settings.enabled).onChange(async (value) => {
+						this.plugin.settings.enabled = value;
 						await this.plugin.saveSettings();
-					})
-			);
+						this.plugin.refreshAll();
+					}));
+				},
+			},
+			{
+				name: "Your name",
+				desc: "Stamped as the author on comments you create.",
+				control: { type: "text", key: "username", placeholder: "Alice" },
+			},
+			{
+				name: "Render Markdown in comments",
+				desc: "Format comment bodies as Markdown instead of plain text.",
+				render: (setting) => {
+					setting.addToggle((t) => t.setValue(this.plugin.settings.renderMarkdown).onChange(async (value) => {
+						this.plugin.settings.renderMarkdown = value;
+						await this.plugin.saveSettings();
+						this.plugin.refreshAll();
+					}));
+				},
+			},
+		];
+	}
 
-		new Setting(containerEl)
-			.setName("Render Markdown in comments")
-			.setDesc("Format comment bodies as Markdown instead of plain text.")
-			.addToggle((t) =>
-				t.setValue(this.plugin.settings.renderMarkdown).onChange(async (v) => {
-					this.plugin.settings.renderMarkdown = v;
-					await this.plugin.saveSettings();
-					this.plugin.refreshAll();
-				})
-			);
+	async setControlValue(key: string, value: unknown): Promise<void> {
+		if (key !== "username" || typeof value !== "string") return;
+		this.plugin.settings.username = value.trim();
+		await this.plugin.saveSettings();
 	}
 }

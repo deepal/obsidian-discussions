@@ -6,6 +6,7 @@ import {
 	CommentBlockSettings,
 	CommentBlockSettingTab,
 	DEFAULT_SETTINGS,
+	normalizeSettings,
 } from "./settings.ts";
 
 export default class CommentBlockPlugin extends Plugin {
@@ -95,7 +96,7 @@ export default class CommentBlockPlugin extends Plugin {
 	}
 
 	async loadSettings(): Promise<void> {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings = normalizeSettings(await this.loadData());
 	}
 
 	async saveSettings(): Promise<void> {

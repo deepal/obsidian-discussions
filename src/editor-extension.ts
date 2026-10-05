@@ -53,7 +53,7 @@ class ThreadWidget extends WidgetType {
 	}
 
 	toDOM(view: EditorView): HTMLElement {
-		const el = document.createElement("div");
+		const el = createDiv();
 		el.className = "cb-thread-widget";
 
 		const component = new Component();

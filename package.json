@@ -16,7 +16,8 @@
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"test": "node --experimental-strip-types --test test/*.test.mjs",
 		"release": "semantic-release",
-		"release:dry-run": "semantic-release --dry-run"
+		"release:dry-run": "semantic-release --dry-run",
+		"lint": "eslint src --max-warnings 0"
 	},
 	"keywords": [
 		"obsidian",
@@ -41,9 +42,16 @@
 		"esbuild": "^0.20.2",
 		"obsidian": "1.13.1",
 		"semantic-release": "^25.0.9",
-		"typescript": "^5.4.3"
+		"typescript": "^5.4.3",
+		"eslint": "9.39.5",
+		"eslint-plugin-obsidianmd": "0.4.2"
 	},
 	"allowScripts": {
 		"esbuild@0.20.2": true
+	},
+	"overrides": {
+		"eslint-plugin-obsidianmd": {
+			"obsidian": "$obsidian"
+		}
 	}
 }

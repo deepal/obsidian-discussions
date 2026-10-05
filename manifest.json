@@ -2,8 +2,8 @@
 	"id": "comment-block",
 	"name": "Discussions",
 	"version": "1.0.0",
-	"minAppVersion": "1.5.0",
-	"description": "Jira-style threaded discussions in a note — nested replies rendered from <comment> blocks, in reading and live preview modes.",
+	"minAppVersion": "1.13.0",
+	"description": "Jira-style discussion threads and nested replies, right inside your Obsidian notes.",
 	"author": "Deepal Jayasekara",
 	"isDesktopOnly": false
 }

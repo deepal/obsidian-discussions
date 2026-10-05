@@ -28,7 +28,7 @@ review notes. No account or external discussion service is needed to store comme
 
 ## Installation
 
-Requires Obsidian **1.5.0 or newer**, as specified in the plugin manifest.
+Requires Obsidian **1.13.0 or newer**, as specified in the plugin manifest.
 
 ### Community plugins
 
@@ -262,3 +262,13 @@ commits exist. To preview version analysis and release notes locally, run
 `npm run release:dry-run` in a checkout with full Git history and tags and
 an authorized `GITHUB_TOKEN`. The dry run checks repository access but does
 not update version files, create a tag, or publish a release.
+
+## Searchable settings and linting
+
+Settings are searchable from Obsidian's global settings search. Development uses
+the official Obsidian lint rules; the lint package's Obsidian dependency is
+overridden to match the API version used by this plugin.
+
+## License
+
+[MIT](./LICENSE), copyright 2026 Deepal Jayasekara.

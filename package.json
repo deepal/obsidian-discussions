@@ -1,12 +1,22 @@
 {
 	"name": "obsidian-comment-block",
 	"version": "0.1.0",
+	"private": true,
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/deepal/obsidian-discussions.git"
+	},
+	"engines": {
+		"node": "^22.22.2 || >=24.15.0"
+	},
 	"description": "Jira-style threaded discussions in Obsidian notes, rendered from <comment> blocks.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-		"test": "node --experimental-strip-types --test test/*.test.mjs"
+		"test": "node --experimental-strip-types --test test/*.test.mjs",
+		"release": "semantic-release",
+		"release:dry-run": "semantic-release --dry-run"
 	},
 	"keywords": [
 		"obsidian",
@@ -20,10 +30,17 @@
 	"devDependencies": {
 		"@codemirror/state": "6.5.0",
 		"@codemirror/view": "6.38.6",
+		"@semantic-release/changelog": "^7.0.0",
+		"@semantic-release/commit-analyzer": "^13.0.1",
+		"@semantic-release/git": "^11.0.1",
+		"@semantic-release/github": "^12.0.10",
+		"@semantic-release/release-notes-generator": "^14.1.1",
 		"@types/node": "^20.11.30",
 		"builtin-modules": "^3.3.0",
+		"conventional-changelog-conventionalcommits": "^9.3.1",
 		"esbuild": "^0.20.2",
 		"obsidian": "1.13.1",
+		"semantic-release": "^25.0.9",
 		"typescript": "^5.4.3"
 	},
 	"allowScripts": {

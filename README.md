@@ -181,8 +181,8 @@ example note that reproduces the issue.
 
 ## Development
 
-From a local checkout, install dependencies with npm. Tests require a Node.js
-version that supports `--experimental-strip-types`.
+From a local checkout, use Node.js 24 (see `.nvmrc`) and install dependencies
+with npm.
 
 ```bash
 npm ci
@@ -204,3 +204,61 @@ all existing plugin folders in that vault whose manifest ID is `comment-block`.
 Alternatively, set `OBSIDIAN_PLUGIN_DIR` to target one plugin folder explicitly.
 Both development and production builds deploy when either variable is set.
 Reload the plugin in Obsidian after a rebuild to load the updated code.
+
+## Versioning and releases
+
+Releases use [Semantic Versioning](https://semver.org/) and are published by
+[semantic-release](https://semantic-release.org/) through the
+[CI and release workflow](./.github/workflows/release.yml).
+Use [Conventional Commits](https://www.conventionalcommits.org/) for commit
+messages. If you squash a pull request, its title becomes the commit message
+and must follow the same format.
+
+| Commit message | Release |
+| --- | --- |
+| `fix: correct discussion rendering` | Patch, for example `1.0.0` → `1.0.1` |
+| `feat: add a discussion setting` | Minor, for example `1.0.0` → `1.1.0` |
+| `feat!: change the comment storage format` | Major, for example `1.0.0` → `2.0.0` |
+| Any commit with a `BREAKING CHANGE:` footer | Major |
+| `docs:`, `test:`, `ci:`, `chore:`, or `refactor:` without a breaking change | No release |
+
+The workflow tests and builds pull requests and pushes to `main`. After those
+checks pass on `main`, it determines the next version from commits since the
+last release, then:
+
+1. Generates release notes and updates [CHANGELOG.md](./CHANGELOG.md).
+2. Synchronizes `package.json`, `package-lock.json`, and `manifest.json`, and
+   adds the new version's minimum Obsidian version to `versions.json`.
+3. Builds the plugin and commits the updated version files and changelog to
+   `main` with `chore(release): <version> [skip ci]`.
+4. Creates a tag such as `1.0.0`, without a `v` prefix, and publishes a GitHub
+   release with `main.js`, `manifest.json`, and `styles.css` attached.
+
+Obsidian requires the release tag to exactly match the version in the manifest
+on the repository's default branch. It installs the attached files from that
+release. Do not bump versions or create release tags manually; the workflow
+keeps them in sync. To raise the minimum Obsidian version, edit `minAppVersion`
+in `manifest.json` as part of the relevant feature or fix.
+
+### First release and GitHub setup
+
+There are no existing release tags when this automation is introduced, so
+semantic-release starts at `1.0.0`, even though the unreleased development
+manifest currently says `0.1.0`. The existing `feat:` commit triggers that
+initial release. Once these changes are pushed to `main`, wait for the
+**CI and release** workflow to finish, then retry the Obsidian submission.
+
+The workflow uses GitHub's built-in `GITHUB_TOKEN` with `contents: write` for
+the release job; no npm token or additional repository secret is needed.
+The package is private and is distributed through GitHub releases only.
+Repository or organization policies must allow this permission. If `main`
+is protected, allow the release bot to push the version/changelog commit
+using your repository's branch rules and, if required, a GitHub App token
+with the appropriate access.
+
+You can rerun the release check through **Actions → CI and release → Run
+workflow** on `main`. This does not force a new release when no qualifying
+commits exist. To preview version analysis and release notes locally, run
+`npm run release:dry-run` in a checkout with full Git history and tags and
+an authorized `GITHUB_TOKEN`. The dry run checks repository access but does
+not update version files, create a tag, or publish a release.

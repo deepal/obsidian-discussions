@@ -233,6 +233,7 @@ last release, then:
    `main` with `chore(release): <version> [skip ci]`.
 4. Creates a tag such as `1.0.0`, without a `v` prefix, and publishes a GitHub
    release with `main.js`, `manifest.json`, and `styles.css` attached.
+5. Generates GitHub build provenance attestations for those release files.
 
 Obsidian requires the release tag to exactly match the version in the manifest
 on the repository's default branch. It installs the attached files from that
@@ -248,8 +249,9 @@ manifest currently says `0.1.0`. The existing `feat:` commit triggers that
 initial release. Once these changes are pushed to `main`, wait for the
 **CI and release** workflow to finish, then retry the Obsidian submission.
 
-The workflow uses GitHub's built-in `GITHUB_TOKEN` with `contents: write` for
-the release job; no npm token or additional repository secret is needed.
+The workflow uses GitHub's built-in `GITHUB_TOKEN` with `contents: write`,
+`id-token: write`, and `attestations: write` for the release job; no npm token
+or additional repository secret is needed.
 The package is private and is distributed through GitHub releases only.
 Repository or organization policies must allow this permission. If `main`
 is protected, allow the release bot to push the version/changelog commit

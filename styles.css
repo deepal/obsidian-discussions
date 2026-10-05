@@ -1,0 +1,256 @@
+/* Comment Blocks — Jira-style threaded discussions. */
+
+.cb-thread {
+	/* Comments sit at the bottom of the note by convention, so a single top rule
+	   marks where the discussion begins — no full container needed. */
+	border: none;
+	border-top: 1px solid color-mix(in srgb, var(--background-modifier-border) 70%, transparent);
+	padding: 1rem 0 0;
+	margin: 1.25rem 0 0;
+	background: transparent;
+}
+
+.cb-thread-widget {
+	/* The Live Preview block widget hosts a .cb-thread; give it breathing room. */
+	margin: 0.5rem 0;
+}
+
+/* The widget lives inside the editor's `.cm-contentContainer`, so any inflated
+   line-height set there (e.g. a theme/snippet override) cascades in and spreads
+   the comment text. Pin it back to normal within the widget. !important is
+   needed to beat an `!important` container rule. */
+.cb-thread-widget,
+.cb-thread-widget .cb-comment__body,
+.cb-thread-widget .cb-comment__body > * {
+	line-height: var(--cb-line-height, var(--line-height-normal)) !important;
+}
+
+/* The CodeMirror editor sets `white-space: pre-wrap` on its content, which the
+   widget inherits — so the newlines between rendered block elements (</p>↵<ul>,
+   </li>↵<li>, …) render as literal line breaks and open a full-line gap between
+   every block. Reading view uses `white-space: normal` and has no such gap.
+   Force normal on the block containers that hold that inter-element whitespace —
+   but NOT on <pre>/<code>, which rely on preserved whitespace. */
+.cb-thread-widget .cb-comment__body,
+.cb-thread-widget .cb-comment__body p,
+.cb-thread-widget .cb-comment__body ul,
+.cb-thread-widget .cb-comment__body ol,
+.cb-thread-widget .cb-comment__body li {
+	white-space: normal !important;
+}
+
+/* The widget renders outside the reading-view (.markdown-preview-view) context,
+   so its paragraphs/lists fall back to oversized default margins that stack into
+   a wide gap. Zero them within the widget only — the inherent line spacing gives
+   enough paragraph separation, and reading view is left untouched. */
+.cb-thread-widget .cb-comment__body > *,
+.cb-thread-widget .cb-comment__body p,
+.cb-thread-widget .cb-comment__body ul,
+.cb-thread-widget .cb-comment__body ol,
+.cb-thread-widget .cb-comment__body li {
+	margin-top: 0 !important;
+	margin-bottom: 0 !important;
+}
+
+/* Guard against blank-line-only paragraphs rendering as an extra empty gap. */
+.cb-thread-widget .cb-comment__body p:empty {
+	display: none;
+}
+
+.cb-thread__header {
+	display: flex;
+	align-items: center;
+	gap: 0.45rem;
+	margin-bottom: 0.6rem;
+	color: var(--text-muted);
+	font-size: 1.1em;
+	font-weight: 600;
+}
+
+.cb-thread__icon {
+	display: inline-flex;
+	align-items: center;
+	--icon-size: 1.15em;
+}
+
+.cb-thread__menu {
+	margin-left: auto;
+	padding: 0.2rem;
+	border: none;
+	background: transparent;
+	color: var(--text-muted);
+	cursor: pointer;
+}
+
+.cb-thread__menu:hover {
+	color: var(--text-normal);
+	background: var(--background-modifier-hover);
+}
+
+.cb-thread__confirm {
+	margin-left: auto;
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+}
+
+.cb-thread__list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.cb-thread__footer {
+	margin-top: 0.75rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+	align-items: flex-start;
+}
+
+.cb-comment {
+	display: flex;
+	gap: 0.6rem;
+	align-items: flex-start;
+}
+
+.cb-comment__avatar {
+	flex: 0 0 auto;
+	width: 30px;
+	height: 30px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.72em;
+	font-weight: 700;
+	color: white;
+	background: hsl(var(--cb-hue, 210), 55%, 45%);
+	user-select: none;
+}
+
+.cb-comment__main {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.cb-comment__meta {
+	display: flex;
+	align-items: baseline;
+	gap: 0.5rem;
+	margin-bottom: 0.15rem;
+}
+
+.cb-comment__author {
+	font-weight: 600;
+	font-size: 0.9em;
+}
+
+.cb-comment__time {
+	color: var(--text-muted);
+	font-size: 0.78em;
+}
+
+.cb-comment__body {
+	/* Match the note's standard body text so comments read like normal prose. */
+	font-size: var(--font-text-size);
+	line-height: var(--cb-line-height, var(--line-height-normal));
+	color: var(--text-normal);
+	font-family: var(--font-text);
+}
+
+.cb-comment__body > :first-child {
+	margin-top: 0;
+}
+
+.cb-comment__body > :last-child {
+	margin-bottom: 0;
+}
+
+.cb-comment__actions {
+	display: flex;
+	align-items: center;
+	gap: 0.9rem;
+	margin-top: 0.25rem;
+}
+
+.cb-action {
+	color: var(--text-faint);
+	font-size: 0.8em;
+	font-weight: 400;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+.cb-action:hover {
+	color: var(--text-muted);
+	text-decoration: underline;
+}
+
+.cb-action--danger:hover {
+	color: var(--text-error);
+}
+
+.cb-action.is-disabled {
+	opacity: 0.4;
+	pointer-events: none;
+}
+
+.cb-confirm {
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+}
+
+.cb-confirm__label {
+	color: var(--text-muted);
+	font-size: 0.8em;
+}
+
+.cb-comment__children {
+	margin-top: 0.75rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	/* Indent replies and hang a faint rail so nesting reads without dominating. */
+	padding-left: 0.75rem;
+	border-left: 1px solid color-mix(in srgb, var(--background-modifier-border) 50%, transparent);
+}
+
+.cb-comment__children:empty {
+	display: none;
+}
+
+.cb-reply-form,
+.cb-edit-form,
+.cb-add-form {
+	margin: 0.4rem 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+	width: 100%;
+}
+
+.cb-form__input {
+	width: 100%;
+	min-height: 3.5rem;
+	resize: vertical;
+	font-family: inherit;
+	font-size: 0.9em;
+	padding: 0.4rem 0.5rem;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	background: var(--background-primary);
+	box-shadow: none;
+}
+
+.cb-form__input:focus {
+	border-color: var(--background-modifier-border-focus, var(--interactive-accent));
+	box-shadow: none;
+	outline: none;
+}
+
+.cb-form__controls {
+	display: flex;
+	gap: 0.4rem;
+}

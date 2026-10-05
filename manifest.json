@@ -1,0 +1,9 @@
+{
+	"id": "comment-block",
+	"name": "Discussions",
+	"version": "0.1.0",
+	"minAppVersion": "1.5.0",
+	"description": "Jira-style threaded discussions in a note — nested replies rendered from <comment> blocks, in reading and live preview modes.",
+	"author": "Deepal Jayasekara",
+	"isDesktopOnly": false
+}

@@ -1,0 +1,32 @@
+{
+	"name": "obsidian-comment-block",
+	"version": "0.1.0",
+	"description": "Jira-style threaded discussions in Obsidian notes, rendered from <comment> blocks.",
+	"main": "main.js",
+	"scripts": {
+		"dev": "node esbuild.config.mjs",
+		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"test": "node --experimental-strip-types --test test/*.test.mjs"
+	},
+	"keywords": [
+		"obsidian",
+		"plugin",
+		"comments",
+		"discussion",
+		"jira"
+	],
+	"author": "Deepal Jayasekara",
+	"license": "MIT",
+	"devDependencies": {
+		"@codemirror/state": "6.5.0",
+		"@codemirror/view": "6.38.6",
+		"@types/node": "^20.11.30",
+		"builtin-modules": "^3.3.0",
+		"esbuild": "^0.20.2",
+		"obsidian": "1.13.1",
+		"typescript": "^5.4.3"
+	},
+	"allowScripts": {
+		"esbuild@0.20.2": true
+	}
+}

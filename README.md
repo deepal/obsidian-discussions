@@ -1,4 +1,4 @@
-# Discussions
+# Obsidian Discussions
 
 A plugin for [Obsidian](https://obsidian.md) that lets you **collaborate with AI
 agents through threaded discussions in your notes**. Leave instructions, ask

@@ -1,7 +1,7 @@
 {
 	"id": "comment-block",
 	"name": "Discussions",
-	"version": "2.0.0",
+	"version": "2.0.1",
 	"minAppVersion": "1.13.0",
 	"description": "Jira-style discussion threads and nested replies, right inside your notes.",
 	"author": "Deepal Jayasekara",

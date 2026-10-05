@@ -1,3 +1,9 @@
+## [2.0.1](https://github.com/deepal/obsidian-discussions/compare/2.0.0...2.0.1) (2026-10-05)
+
+### Bug Fixes
+
+* address community plugin review findings ([7f9ae90](https://github.com/deepal/obsidian-discussions/commit/7f9ae90919125579ca03e86b27723d2b0d0ac9b1))
+
 ## [2.0.0](https://github.com/deepal/obsidian-discussions/compare/1.0.0...2.0.0) (2026-10-05)
 
 ### ⚠ BREAKING CHANGES

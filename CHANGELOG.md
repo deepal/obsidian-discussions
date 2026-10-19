@@ -1,3 +1,9 @@
+## [2.1.0](https://github.com/deepal/obsidian-discussions/compare/2.0.1...2.1.0) (2026-10-19)
+
+### Features
+
+* add keyboard submission and expanding comment boxes ([2ad733a](https://github.com/deepal/obsidian-discussions/commit/2ad733ae56a2b34a35e1547241327084e5fd6b1b))
+
 ## [2.0.1](https://github.com/deepal/obsidian-discussions/compare/2.0.0...2.0.1) (2026-10-05)
 
 ### Bug Fixes

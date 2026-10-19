@@ -234,7 +234,10 @@
 .cb-form__input {
 	width: 100%;
 	min-height: 3.5rem;
-	resize: vertical;
+	max-height: none;
+	box-sizing: border-box;
+	resize: none;
+	overflow-y: hidden;
 	font-family: inherit;
 	font-size: 0.9em;
 	padding: 0.4rem 0.5rem;

@@ -1,4 +1,4 @@
-import { App, Component, Menu, setIcon } from "obsidian";
+import { App, Component, Menu, Scope, setIcon } from "obsidian";
 import {
 	buildForest,
 	type CommentNode,
@@ -219,10 +219,9 @@ function openReplyForm(
 		form.remove();
 		replyLink.removeClass("is-disabled");
 	};
-	wireForm(form, input, close, (text) => ctx.onReply(target, text));
-
 	// Place the form above the child replies so it stays attached to its parent.
 	main.insertBefore(form, children);
+	wireForm(form, input, close, (text) => ctx.onReply(target, text), ctx);
 	input.focus();
 }
 
@@ -239,9 +238,8 @@ function openComposeForm(
 		form.remove();
 		addLink.removeClass("is-disabled");
 	};
-	wireForm(form, input, close, (text) => ctx.onAddComment(text));
-
 	footer.insertBefore(form, addLink);
+	wireForm(form, input, close, (text) => ctx.onAddComment(text), ctx);
 	input.focus();
 }
 
@@ -262,9 +260,8 @@ function openEditForm(
 		body.show();
 		actions.show();
 	};
-	wireForm(form, input, close, (text) => ctx.onEdit(target, text));
-
 	body.insertAdjacentElement("afterend", form);
+	wireForm(form, input, close, (text) => ctx.onEdit(target, text), ctx);
 	input.focus();
 }
 
@@ -323,12 +320,47 @@ function wireForm(
 	form: HTMLElement,
 	input: HTMLTextAreaElement,
 	close: () => void,
-	submitText: (text: string) => void
+	submitText: (text: string) => void,
+	ctx: ThreadContext
 ): void {
+	const { app, component } = ctx;
+	const lifecycle = component.addChild(new Component());
+	let closed = false;
+	const finish = () => {
+		if (closed) return;
+		closed = true;
+		component.removeChild(lifecycle);
+		close();
+	};
+	lifecycle.register(() => { closed = true; });
+
+	// Measure only after insertion, including pre-filled edits. Resetting the
+	// height first allows the field to shrink as well as grow; scrollHeight
+	// includes padding, so add the borders for our border-box sizing.
+	const resize = () => {
+		if (closed || !input.isConnected) return;
+		input.setCssProps({ height: "auto" });
+		input.setCssProps({
+			height: `${input.scrollHeight + input.offsetHeight - input.clientHeight}px`,
+		});
+	};
+	lifecycle.registerDomEvent(input, "input", resize);
+	let width = input.clientWidth;
+	const observer = new ResizeObserver(() => {
+		// Ignore the height changes caused by resize() itself.
+		if (input.clientWidth === width) return;
+		width = input.clientWidth;
+		resize();
+	});
+	observer.observe(input);
+	lifecycle.register(() => observer.disconnect());
+	resize();
+
 	const submit = () => {
+		if (closed) return;
 		const text = input.value.trim();
 		if (!text) {
-			close();
+			finish();
 			return;
 		}
 		submitText(text);
@@ -336,24 +368,57 @@ function wireForm(
 		// panel: an unchanged edit (e.g. Save without touching the text) produces
 		// identical source, so no re-render fires and the form would otherwise stay
 		// stuck open. Harmless when a re-render does replace the panel.
-		close();
+		finish();
 	};
 
-	form.querySelector<HTMLButtonElement>(".cb-form__save")!.addEventListener(
+	lifecycle.registerDomEvent(
+		form.querySelector<HTMLButtonElement>(".cb-form__save")!,
 		"click",
 		submit
 	);
-	form.querySelector<HTMLButtonElement>(".cb-form__cancel")!.addEventListener(
+	lifecycle.registerDomEvent(
+		form.querySelector<HTMLButtonElement>(".cb-form__cancel")!,
 		"click",
-		close
+		finish
 	);
-	input.addEventListener("keydown", (evt) => {
-		if (evt.key === "Enter" && (evt.metaKey || evt.ctrlKey)) {
-			evt.preventDefault();
-			submit();
-		} else if (evt.key === "Escape") {
-			evt.preventDefault();
-			close();
-		}
+	const submitKey = (evt: KeyboardEvent) => {
+		if (evt.isComposing) return;
+		evt.preventDefault();
+		evt.stopPropagation();
+		if (!evt.repeat) submit();
+		return false;
+	};
+	const cancelKey = (evt: KeyboardEvent) => {
+		if (evt.isComposing) return;
+		evt.preventDefault();
+		evt.stopPropagation();
+		finish();
+		return false;
+	};
+
+	// Obsidian resolves hotkeys in window capture, before textarea listeners.
+	// Own these bindings only while this input has focus, and release the scope
+	// on blur or teardown so it cannot affect the note editor afterwards.
+	const scope = new Scope(app.scope);
+	for (const modifier of ["Meta", "Ctrl"] as const) {
+		scope.register([modifier], "Enter", submitKey);
+	}
+	scope.register([], "Escape", cancelKey);
+	let scopeActive = false;
+	const deactivate = () => {
+		if (!scopeActive) return;
+		scopeActive = false;
+		app.keymap.popScope(scope);
+	};
+	lifecycle.registerDomEvent(input, "focus", () => {
+		if (scopeActive) return;
+		scopeActive = true;
+		app.keymap.pushScope(scope);
+	});
+	lifecycle.registerDomEvent(input, "blur", deactivate);
+	lifecycle.register(deactivate);
+	lifecycle.registerDomEvent(input, "keydown", (evt) => {
+		if (evt.key === "Enter" && (evt.metaKey || evt.ctrlKey)) submitKey(evt);
+		else if (evt.key === "Escape") cancelKey(evt);
 	});
 }

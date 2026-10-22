@@ -67,6 +67,7 @@ export class ReadingViewManager {
 				app: this.plugin.app,
 				component: child,
 				settings: this.plugin.settings,
+				mentions: this.plugin.mentions,
 				sourcePath: ctx.sourcePath,
 				onReply: (target, body) =>
 					void this.applyEdit(ctx.sourcePath, (text) =>
@@ -113,11 +114,16 @@ export class ReadingViewManager {
 		const file = this.plugin.app.vault.getAbstractFileByPath(sourcePath);
 		if (!(file instanceof TFile)) return;
 
+		let before = "";
+		let after = "";
 		await this.plugin.app.vault.process(file, (data) => {
+			before = after = data;
 			const edit = compute(data);
 			if (!edit) return data;
-			return data.slice(0, edit.from) + edit.insert + data.slice(edit.to);
+			after = data.slice(0, edit.from) + edit.insert + data.slice(edit.to);
+			return after;
 		});
+		this.plugin.mentions.committed(sourcePath, before, after);
 	}
 
 	/** Re-renders open reading views (e.g. after a settings change). */

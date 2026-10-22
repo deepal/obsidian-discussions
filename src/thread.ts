@@ -1,3 +1,4 @@
+import type { MentionClient } from "./mention-client.ts";
 import { App, Component, Menu, Scope, setIcon } from "obsidian";
 import {
 	buildForest,
@@ -9,6 +10,7 @@ import { renderCommentBody } from "./render.ts";
 import type { CommentBlockSettings } from "./settings.ts";
 
 export interface ThreadContext {
+	mentions?: MentionClient;
 	app: App;
 	/** Lifecycle owner for async Markdown renders. */
 	component: Component;
@@ -134,7 +136,11 @@ function confirmDeleteDiscussion(
 	});
 }
 
-function renderNode(parent: HTMLElement, node: CommentNode, ctx: ThreadContext): void {
+function subtreeIds(node: CommentNode): Array<string | null> {
+	return [node.comment.id, ...node.children.flatMap(subtreeIds)];
+}
+
+function renderNode(parent: HTMLElement, node: CommentNode, ctx: ThreadContext, threadIds = subtreeIds(node), root = true): void {
 	const { comment } = node;
 	const author = comment.author ?? "Unknown";
 
@@ -157,16 +163,17 @@ function renderNode(parent: HTMLElement, node: CommentNode, ctx: ThreadContext):
 	renderBody(body, comment, ctx);
 
 	const actions = main.createDiv({ cls: "cb-comment__actions" });
+	if (root) ctx.mentions?.bind(main, ctx.sourcePath, threadIds, ctx.component, undefined, actions);
 
 	// Replies nest under their target so arbitrarily deep threads stay readable.
 	const children = main.createDiv({ cls: "cb-comment__children" });
 	for (const child of node.children) {
-		renderNode(children, child, ctx);
+		renderNode(children, child, ctx, threadIds, false);
 	}
 
 	const reply = action(actions, "Reply", () => {
 		if (main.querySelector(".cb-reply-form")) return; // already open
-		openReplyForm(main, children, reply, comment, ctx);
+		openReplyForm(main, children, reply, comment, ctx, threadIds);
 	});
 	const edit = action(actions, "Edit", () => {
 		if (main.querySelector(".cb-edit-form")) return;
@@ -179,15 +186,12 @@ function renderNode(parent: HTMLElement, node: CommentNode, ctx: ThreadContext):
 
 /** Renders a comment body honouring the Markdown setting. */
 function renderBody(el: HTMLElement, comment: ParsedComment, ctx: ThreadContext): void {
-	el.empty();
-	renderCommentBody(
-		ctx.app,
-		ctx.component,
-		el,
-		comment.body,
-		ctx.sourcePath,
-		ctx.settings.renderMarkdown
-	);
+	const render = (tag = "") => {
+		el.empty();
+		renderCommentBody(ctx.app, ctx.component, el, comment.body, ctx.sourcePath, ctx.settings.renderMarkdown, tag);
+	};
+	if (ctx.mentions) ctx.mentions.bindBody(ctx.component, render);
+	else render();
 }
 
 /** Creates a muted link-style action trigger (no button chrome). */
@@ -210,7 +214,8 @@ function openReplyForm(
 	children: HTMLElement,
 	replyLink: HTMLAnchorElement,
 	target: ParsedComment,
-	ctx: ThreadContext
+	ctx: ThreadContext,
+	threadIds: Array<string | null>
 ): void {
 	replyLink.addClass("is-disabled");
 
@@ -221,7 +226,8 @@ function openReplyForm(
 	};
 	// Place the form above the child replies so it stays attached to its parent.
 	main.insertBefore(form, children);
-	wireForm(form, input, close, (text) => ctx.onReply(target, text), ctx);
+	const lifecycle = wireForm(form, input, close, (text) => ctx.onReply(target, text), ctx);
+	ctx.mentions?.bindComposer(form, ctx.sourcePath, threadIds, lifecycle);
 	input.focus();
 }
 
@@ -322,7 +328,7 @@ function wireForm(
 	close: () => void,
 	submitText: (text: string) => void,
 	ctx: ThreadContext
-): void {
+): Component {
 	const { app, component } = ctx;
 	const lifecycle = component.addChild(new Component());
 	let closed = false;
@@ -357,7 +363,7 @@ function wireForm(
 	resize();
 
 	const submit = () => {
-		if (closed) return;
+		if (closed || input.disabled) return;
 		const text = input.value.trim();
 		if (!text) {
 			finish();
@@ -421,4 +427,5 @@ function wireForm(
 		if (evt.key === "Enter" && (evt.metaKey || evt.ctrlKey)) submitKey(evt);
 		else if (evt.key === "Escape") cancelKey(evt);
 	});
+	return lifecycle;
 }

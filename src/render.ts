@@ -1,4 +1,8 @@
+import { highlightMentionMarkdown, highlightMentionText } from "./mention-highlight.ts";
 import { App, Component, MarkdownRenderer, Notice } from "obsidian";
+
+const generations = new WeakMap<HTMLElement, number>();
+const linked = new WeakSet<HTMLElement>();
 
 /**
  * Renders a comment body into `el`. With `asMarkdown`, the body is rendered
@@ -15,14 +19,26 @@ export function renderCommentBody(
 	el: HTMLElement,
 	body: string,
 	sourcePath: string,
-	asMarkdown: boolean
+	asMarkdown: boolean,
+	tag = ""
 ): void {
+	const generation = (generations.get(el) ?? 0) + 1;
+	generations.set(el, generation);
 	if (!asMarkdown) {
-		el.setText(body);
+		highlightMentionText(el, body, tag);
 		return;
 	}
 
-	void MarkdownRenderer.render(app, body, el, sourcePath, component);
+	if (tag) {
+		const rendered = createDiv();
+		void MarkdownRenderer.render(app, highlightMentionMarkdown(body, tag), rendered, sourcePath, component).then(() => {
+			if (generations.get(el) === generation) el.replaceChildren(...Array.from(rendered.childNodes));
+		});
+	} else {
+		void MarkdownRenderer.render(app, body, el, sourcePath, component);
+	}
+	if (linked.has(el)) return;
+	linked.add(el);
 
 	el.addEventListener("click", (evt) => {
 		const anchor = (evt.target as HTMLElement).closest("a");

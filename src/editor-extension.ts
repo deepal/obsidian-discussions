@@ -64,6 +64,7 @@ class ThreadWidget extends WidgetType {
 			app: this.plugin.app,
 			component,
 			settings: this.plugin.settings,
+			mentions: this.plugin.mentions,
 			sourcePath: this.sourcePath,
 			onReply: (target, body) =>
 				this.apply(view, (text) =>
@@ -97,11 +98,13 @@ class ThreadWidget extends WidgetType {
 		view: EditorView,
 		compute: (text: string) => SourceEdit | null
 	): void {
-		const edit = compute(view.state.doc.toString());
+		const before = view.state.doc.toString();
+		const edit = compute(before);
 		if (!edit) return;
 		view.dispatch({
 			changes: { from: edit.from, to: edit.to, insert: edit.insert },
 		});
+		this.plugin.mentions.committed(this.sourcePath, before, view.state.doc.toString());
 	}
 
 	destroy(): void {

@@ -1,3 +1,6 @@
+import { MentionClient } from "./mention-client.ts";
+import { discussionFormat } from "./mention-format.ts";
+import { mentionExtension } from "./mention-extension.ts";
 import { Editor, MarkdownView, Plugin } from "obsidian";
 import { createEditorExtension, rebuildEffect } from "./editor-extension.ts";
 import { ReadingViewManager } from "./reading-view.ts";
@@ -15,11 +18,16 @@ export default class CommentBlockPlugin extends Plugin {
 	/** Bumped on every settings change so editor widgets rebuild. */
 	settingsVersion = 0;
 
+	mentions!: MentionClient;
+
 	private readingManager!: ReadingViewManager;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
 
+		this.mentions = this.addChild(new MentionClient(this, "comment-block", discussionFormat, () => this.settings.enabled));
+		this.mentions.load();
+		this.registerEditorExtension(mentionExtension(this.mentions, discussionFormat));
 		this.readingManager = new ReadingViewManager(this);
 
 		this.registerEditorExtension(createEditorExtension(this));
@@ -80,6 +88,7 @@ export default class CommentBlockPlugin extends Plugin {
 
 	/** Forces every renderer to redraw (e.g. after a settings change). */
 	refreshAll(): void {
+		this.mentions?.settingsChanged();
 		this.settingsVersion++;
 		this.updateBodyClass();
 		this.readingManager?.refresh();

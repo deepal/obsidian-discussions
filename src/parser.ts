@@ -12,6 +12,7 @@
  */
 
 export interface ParsedComment {
+	agent?: boolean;
 	/** Char offset of the opening `<comment` in the source text. */
 	from: number;
 	/** Char offset just past the closing `</comment>`. */
@@ -158,6 +159,7 @@ export function parseComments(text: string): ParsedComment[] {
 			lineStart: lineOf(from),
 			lineEnd: lineOf(to - 1),
 			id: attrs.id ?? null,
+			...(attrs["data-aio-reply"] ? { agent: true } : {}),
 			parentId: attrs.parent_id ?? null,
 			author: attrs.author ?? null,
 			bodyFrom,

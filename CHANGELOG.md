@@ -1,3 +1,13 @@
+## [3.0.0](https://github.com/deepal/obsidian-discussions/compare/2.1.0...3.0.0) (2026-10-22)
+
+### ⚠ BREAKING CHANGES
+
+* add optional agent mentions to discussions
+
+### Features
+
+* add optional agent mentions to discussions ([66cc29e](https://github.com/deepal/obsidian-discussions/commit/66cc29ecd4ff1ff098eca6e66b4f26605b377576))
+
 ## [2.1.0](https://github.com/deepal/obsidian-discussions/compare/2.0.1...2.1.0) (2026-10-19)
 
 ### Features

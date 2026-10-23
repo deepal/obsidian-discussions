@@ -1,3 +1,13 @@
+## [4.0.0](https://github.com/deepal/obsidian-discussions/compare/3.0.0...4.0.0) (2026-10-23)
+
+### ⚠ BREAKING CHANGES
+
+* direct agent work uses bridge v2 and saves open Markdown editors before execution. The updated AI Overview requires this v2 comment host; v1 fallback remains available for older AI Overview versions.
+
+### Features
+
+* support direct agent work in discussion threads ([8d7ee47](https://github.com/deepal/obsidian-discussions/commit/8d7ee472cccef1c864c8f6c0e0b61d2717cb4107))
+
 ## [3.0.0](https://github.com/deepal/obsidian-discussions/compare/2.1.0...3.0.0) (2026-10-22)
 
 ### ⚠ BREAKING CHANGES

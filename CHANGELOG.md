@@ -1,3 +1,9 @@
+## [4.1.0](https://github.com/deepal/obsidian-discussions/compare/4.0.0...4.1.0) (2026-10-24)
+
+### Features
+
+* add ai agent setup guidance to settings ([74b4c69](https://github.com/deepal/obsidian-discussions/commit/74b4c69d635a0c1057432e902442268608eee959))
+
 ## [4.0.0](https://github.com/deepal/obsidian-discussions/compare/3.0.0...4.0.0) (2026-10-23)
 
 ### ⚠ BREAKING CHANGES

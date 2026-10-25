@@ -29,7 +29,7 @@ export interface NewComment {
 	author: string;
 	/** Omitted for a top-level comment; set to link a reply to its target. */
 	parentId?: string;
-	/** Body text; defaults to empty (caret is placed inside by the caller). */
+	/** Body text; defaults to empty. */
 	body?: string;
 }
 
@@ -46,9 +46,9 @@ export function newCommentBlock(c: NewComment): string {
 	return `<comment ${attrs.join(" ")}>\n${c.body ?? ""}\n</comment>`;
 }
 
-/** Source for a new discussion whose first comment is ready to edit. */
-export function newDiscussionBlock(c: NewComment): string {
-	return `<discussion>\n${newCommentBlock(c)}\n</discussion>`;
+/** Source for an empty discussion, ready for its first comment in the panel. */
+export function newDiscussionBlock(): string {
+	return "<discussion></discussion>";
 }
 
 /**

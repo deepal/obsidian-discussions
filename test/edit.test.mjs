@@ -154,8 +154,10 @@ test("deleting one adjacent discussion leaves its neighbour intact", () => {
 	assert.equal(parseDiscussionRegions(out).length, 1);
 });
 
-test("new discussion command source wraps its first comment", () => {
-	const text = newDiscussionBlock({ id: "5", author: "bob" });
-	assert.equal(parseDiscussionRegions(text)[0].comments.length, 1);
-	assert.match(text, /^<discussion>\n<comment[\s\S]*<\/comment>\n<\/discussion>$/);
+test("new discussion source contains an empty wrapper without a placeholder comment", () => {
+	const text = newDiscussionBlock();
+	const regions = parseDiscussionRegions(text);
+	assert.equal(text, "<discussion></discussion>");
+	assert.equal(regions.length, 1);
+	assert.equal(regions[0].comments.length, 0);
 });

@@ -68,21 +68,25 @@ export default class CommentBlockPlugin extends Plugin {
 	}
 
 	/**
-	 * Inserts a discussion with its first empty comment and places the caret in
-	 * that comment's body. The block is padded with blank lines so Obsidian
-	 * treats it as a raw-HTML block rather than inline markup.
+	 * Inserts an empty discussion and leaves the caret on a blank line below it
+	 * so the panel renders immediately. Blank lines isolate the HTML block from
+	 * surrounding prose without replacing any existing text.
 	 */
 	private startThread(editor: Editor): void {
-		const block = newDiscussionBlock({ id: this.newId(), author: this.authorName() });
 		const cursor = editor.getCursor();
 		const atLineStart = cursor.ch === 0;
-		const lead = atLineStart ? "" : "\n\n";
-		const insert = `${lead}${block}\n`;
+		const needsLeadingBlank = cursor.line > 0 && editor.getLine(cursor.line - 1).trim() !== "";
+		const lead = atLineStart ? (needsLeadingBlank ? "\n" : "") : "\n\n";
+		const atLineEnd = cursor.ch === editor.getLine(cursor.line).length;
+		const trail = atLineEnd && cursor.line < editor.lastLine() ? "\n" : "\n\n";
+		const openLine = cursor.line + (atLineStart ? (needsLeadingBlank ? 1 : 0) : 2);
 
-		editor.replaceRange(insert, cursor);
-		// Caret onto the blank body line (the line between the open/close tags).
-		const openLine = cursor.line + (atLineStart ? 0 : 2);
-		editor.setCursor({ line: openLine + 2, ch: 0 });
+		// Insert and move the caret together so no intermediate selection exposes
+		// the source, and the whole insertion remains a single undoable edit.
+		editor.transaction({
+			changes: [{ from: cursor, text: `${lead}${newDiscussionBlock()}${trail}` }],
+			selection: { from: { line: openLine + 1, ch: 0 } },
+		});
 		editor.focus();
 	}
 

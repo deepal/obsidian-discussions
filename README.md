@@ -97,10 +97,11 @@ to build the plugin from source.
    new comments use `anonymous` as the author.
 2. Open a note in editing mode and place the cursor on a blank line where you
    want the discussion to appear.
-3. Open the command palette and run **Discussions: Start discussion**.
-4. Type your first comment in the empty comment body, where the command places
-   your cursor. Move the cursor outside the discussion, or switch to Reading
-   view, to see the panel.
+3. Open the command palette and run **Discussions: Start discussion**, or use
+   its assigned hotkey. An empty **0 comments** panel appears, with the cursor
+   on a blank line below it.
+4. Click **Add comment**, type your first message, and submit it. Cancelling
+   leaves the empty discussion ready for later.
 5. Use **Reply** to respond to a comment, or **Add comment** to start another
    top-level conversation in the same panel.
 

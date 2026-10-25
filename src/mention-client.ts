@@ -297,7 +297,7 @@ export class MentionClient extends Component {
 	}
 
 	/** Patch only this small status element; never replace the thread or its composer. */
-	bind(container: HTMLElement, path: string, commentIds: Array<string | null>, owner: Component, layout: () => void = () => undefined, before?: HTMLElement): void {
+	bind(container: HTMLElement, path: string, commentIds: Array<string | null>, owner: Component, layout: () => void = () => undefined, before?: HTMLElement, options: { allowRetry?: boolean } = {}): void {
 		let status: HTMLElement | undefined;
 		let signature = "";
 		const steps = new Map<string, HTMLElement>();
@@ -331,7 +331,7 @@ export class MentionClient extends Component {
 				} else {
 					row.createSpan({ text: job.state === "queued" ? `${job.tag} is queued…` : `${job.tag}: ${job.error ?? job.detail ?? job.state}` });
 				}
-				if (job.state === "failed") {
+				if (job.state === "failed" && options.allowRetry !== false) {
 					const retry = row.createEl("button", { text: "Retry", attr: { type: "button" } });
 					retry.addEventListener("click", () => { void this.bridge?.retry(job.request.id).catch((error: unknown) => console.error("[agent-mentions] Retry failed", error)); });
 				} else if (busy || job.state === "queued") {

@@ -102,12 +102,16 @@ test("two newly pasted mentions are submitted even when the first identity shift
  assert.equal(f.submitted[1].message,"@teddy second question");
 });
 
-test("Reading views receive current metadata before rendering the queued request", async () => {
+test("Reading views receive current metadata and allow an in-flight reply to publish", async () => {
  const f=fixture();let rendered="",renders=0;
  const view=Object.assign(new globalThis.__mentionMarkdownView(),{file:f.file,getMode:()=>"preview",setViewData(text){rendered=text;},previewMode:{rerender(){renders++;}}});
  f.views.push(view);
  f.client.committed("Note.md","",f.current());await until(()=>f.submitted.length===1);
  const comment=format.parse(rendered)[0];assert.equal(comment.id,f.submitted[0].commentId);assert.ok(renders>0);
+ await f.host().publish(f.submitted[0], "teddy", "Reply completed in Reading view");
+ assert.ok(rendered.includes("Reply completed in Reading view"));
+ assert.ok(f.current().includes("Reply completed in Reading view"));
+ assert.equal(f.submitted.length, 1);
 });
 
 class Element {

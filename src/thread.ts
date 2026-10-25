@@ -16,6 +16,11 @@ export interface ThreadContext {
 	component: Component;
 	settings: CommentBlockSettings;
 	sourcePath: string;
+	/** Only editor renderers provide the capability to change comments. */
+	editing?: ThreadEditing;
+}
+
+export interface ThreadEditing {
 	/** Persists a reply to `target`; the layer decides where in the source it lands. */
 	onReply: (target: ParsedComment, body: string) => void;
 	/** Replaces `target`'s body in the source. */
@@ -86,31 +91,35 @@ export function renderThread(
 		cls: "cb-thread__title",
 		text: `${count} ${count === 1 ? "comment" : "comments"}`,
 	});
-	const more = header.createEl("button", {
-		cls: "cb-thread__menu",
-		attr: { "aria-label": "Discussion actions" },
-	});
-	setIcon(more, "ellipsis");
-	more.addEventListener("click", (evt) => {
-		const menu = new Menu();
-		menu.addItem((item) =>
-			item.setTitle("Delete discussion").setIcon("trash").onClick(() =>
-				confirmDeleteDiscussion(header, more, count, ctx)
-			)
-		);
-		menu.showAtMouseEvent(evt);
-	});
+	if (ctx.editing) {
+		const more = header.createEl("button", {
+			cls: "cb-thread__menu",
+			attr: { "aria-label": "Discussion actions" },
+		});
+		setIcon(more, "ellipsis");
+		more.addEventListener("click", (evt) => {
+			const menu = new Menu();
+			menu.addItem((item) =>
+				item.setTitle("Delete discussion").setIcon("trash").onClick(() =>
+					confirmDeleteDiscussion(header, more, count, ctx)
+				)
+			);
+			menu.showAtMouseEvent(evt);
+		});
+	}
 
 	const list = container.createDiv({ cls: "cb-thread__list" });
 	for (const node of buildForest(region.comments)) {
 		renderNode(list, node, ctx);
 	}
 
-	const footer = container.createDiv({ cls: "cb-thread__footer" });
-	const add = action(footer, "Add comment", () => {
-		if (container.querySelector(".cb-add-form")) return; // already open
-		openComposeForm(footer, add, ctx);
-	});
+	if (ctx.editing) {
+		const footer = container.createDiv({ cls: "cb-thread__footer" });
+		const add = action(footer, "Add comment", () => {
+			if (container.querySelector(".cb-add-form")) return; // already open
+			openComposeForm(footer, add, ctx);
+		});
+	}
 }
 
 /** Confirms deletion of the whole panel before removing its source. */
@@ -120,6 +129,8 @@ function confirmDeleteDiscussion(
 	count: number,
 	ctx: ThreadContext
 ): void {
+	const editing = ctx.editing;
+	if (!editing) return;
 	if (header.querySelector(".cb-thread__confirm")) return;
 	more.hide();
 	const confirm = header.createDiv({ cls: "cb-thread__confirm" });
@@ -129,7 +140,7 @@ function confirmDeleteDiscussion(
 			? "Delete this discussion?"
 			: `Delete this discussion and its ${count} ${count === 1 ? "comment" : "comments"}?`,
 	});
-	action(confirm, "Delete", ctx.onDeleteDiscussion).addClass("cb-action--danger");
+	action(confirm, "Delete", editing.onDeleteDiscussion).addClass("cb-action--danger");
 	action(confirm, "Cancel", () => {
 		confirm.remove();
 		more.show();
@@ -140,7 +151,7 @@ function subtreeIds(node: CommentNode): Array<string | null> {
 	return [node.comment.id, ...node.children.flatMap(subtreeIds)];
 }
 
-function renderNode(parent: HTMLElement, node: CommentNode, ctx: ThreadContext, threadIds = subtreeIds(node), root = true): void {
+function renderNode(parent: HTMLElement, node: CommentNode, ctx: ThreadContext, threadIds = subtreeIds(node)): void {
 	const { comment } = node;
 	const author = comment.author ?? "Unknown";
 
@@ -162,14 +173,16 @@ function renderNode(parent: HTMLElement, node: CommentNode, ctx: ThreadContext, 
 	const body = main.createDiv({ cls: "cb-comment__body" });
 	renderBody(body, comment, ctx);
 
-	const actions = main.createDiv({ cls: "cb-comment__actions" });
-	if (root) ctx.mentions?.bind(main, ctx.sourcePath, threadIds, ctx.component, undefined, actions);
+	const actions = ctx.editing ? main.createDiv({ cls: "cb-comment__actions" }) : undefined;
 
 	// Replies nest under their target so arbitrarily deep threads stay readable.
 	const children = main.createDiv({ cls: "cb-comment__children" });
+	// Display a job at its initiating comment; reply locking still uses threadIds.
+	ctx.mentions?.bind(main, ctx.sourcePath, [comment.id], ctx.component, undefined, actions ?? children, { allowRetry: !!ctx.editing });
 	for (const child of node.children) {
-		renderNode(children, child, ctx, threadIds, false);
+		renderNode(children, child, ctx, threadIds);
 	}
+	if (!actions) return;
 
 	const reply = action(actions, "Reply", () => {
 		if (main.querySelector(".cb-reply-form")) return; // already open
@@ -217,6 +230,8 @@ function openReplyForm(
 	ctx: ThreadContext,
 	threadIds: Array<string | null>
 ): void {
+	const editing = ctx.editing;
+	if (!editing) return;
 	replyLink.addClass("is-disabled");
 
 	const { form, input } = buildForm("cb-reply-form", "Write a reply…", "Reply");
@@ -226,7 +241,7 @@ function openReplyForm(
 	};
 	// Place the form above the child replies so it stays attached to its parent.
 	main.insertBefore(form, children);
-	const lifecycle = wireForm(form, input, close, (text) => ctx.onReply(target, text), ctx);
+	const lifecycle = wireForm(form, input, close, (text) => editing.onReply(target, text), ctx);
 	ctx.mentions?.bindComposer(form, ctx.sourcePath, threadIds, lifecycle);
 	input.focus();
 }
@@ -237,6 +252,8 @@ function openComposeForm(
 	addLink: HTMLAnchorElement,
 	ctx: ThreadContext
 ): void {
+	const editing = ctx.editing;
+	if (!editing) return;
 	addLink.addClass("is-disabled");
 
 	const { form, input } = buildForm("cb-add-form", "Write a comment…", "Comment");
@@ -245,7 +262,7 @@ function openComposeForm(
 		addLink.removeClass("is-disabled");
 	};
 	footer.insertBefore(form, addLink);
-	wireForm(form, input, close, (text) => ctx.onAddComment(text), ctx);
+	wireForm(form, input, close, (text) => editing.onAddComment(text), ctx);
 	input.focus();
 }
 
@@ -256,6 +273,8 @@ function openEditForm(
 	target: ParsedComment,
 	ctx: ThreadContext
 ): void {
+	const editing = ctx.editing;
+	if (!editing) return;
 	body.hide();
 	actions.hide();
 
@@ -267,7 +286,7 @@ function openEditForm(
 		actions.show();
 	};
 	body.insertAdjacentElement("afterend", form);
-	wireForm(form, input, close, (text) => ctx.onEdit(target, text), ctx);
+	wireForm(form, input, close, (text) => editing.onEdit(target, text), ctx);
 	input.focus();
 }
 
@@ -279,6 +298,8 @@ function confirmDelete(
 	node: CommentNode,
 	ctx: ThreadContext
 ): void {
+	const editing = ctx.editing;
+	if (!editing) return;
 	if (actions.querySelector(".cb-confirm")) return;
 	editLink.addClass("is-disabled");
 	replyLink.addClass("is-disabled");
@@ -291,7 +312,7 @@ function confirmDelete(
 			? `Delete this comment and ${descendants} ${descendants === 1 ? "reply" : "replies"}?`
 			: "Delete this comment?",
 	});
-	action(confirm, "Delete", () => ctx.onDelete(node.comment)).addClass(
+	action(confirm, "Delete", () => editing.onDelete(node.comment)).addClass(
 		"cb-action--danger"
 	);
 	action(confirm, "Cancel", () => {

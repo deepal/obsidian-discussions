@@ -66,29 +66,31 @@ class ThreadWidget extends WidgetType {
 			settings: this.plugin.settings,
 			mentions: this.plugin.mentions,
 			sourcePath: this.sourcePath,
-			onReply: (target, body) =>
-				this.apply(view, (text) =>
-					replyEdit(text, target, {
-						id: this.plugin.newId(),
-						author: this.plugin.authorName(),
-						parentId: target.id ?? undefined,
-						body,
-					})
-				),
-			onEdit: (target, body) =>
-				this.apply(view, (text) => editBodyEdit(text, target, body)),
-			onDelete: (target) =>
-				this.apply(view, (text) => deleteCommentEdit(text, target)),
-			onDeleteDiscussion: () =>
-				this.apply(view, (text) => deleteDiscussionEdit(text, this.region)),
-			onAddComment: (body) =>
-				this.apply(view, (text) =>
-					addCommentEdit(text, this.region, {
-						id: this.plugin.newId(),
-						author: this.plugin.authorName(),
-						body,
-					})
-				),
+			editing: {
+				onReply: (target, body) =>
+					this.apply(view, (text) =>
+						replyEdit(text, target, {
+							id: this.plugin.newId(),
+							author: this.plugin.authorName(),
+							parentId: target.id ?? undefined,
+							body,
+						})
+					),
+				onEdit: (target, body) =>
+					this.apply(view, (text) => editBodyEdit(text, target, body)),
+				onDelete: (target) =>
+					this.apply(view, (text) => deleteCommentEdit(text, target)),
+				onDeleteDiscussion: () =>
+					this.apply(view, (text) => deleteDiscussionEdit(text, this.region)),
+				onAddComment: (body) =>
+					this.apply(view, (text) =>
+						addCommentEdit(text, this.region, {
+							id: this.plugin.newId(),
+							author: this.plugin.authorName(),
+							body,
+						})
+					),
+			},
 		});
 		return el;
 	}

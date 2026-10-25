@@ -91,13 +91,19 @@ applying (posting the reply), completed, failed or cancelled states. The bridge
 supports source attachment, submission, queries, subscriptions, retry and stop.
 New direct jobs require a v2 host capable of preparing editor buffers.
 
-Active work displays three animated typing dots above the reply composer. The
+Active work displays three animated typing dots directly beneath the comment
+that mentioned the agent, including nested replies, before its actions and
+reply composer. Each comment shows only the activity it initiated. The
 latest streamed activity appears beneath them in very small, muted text, using
 the same events as AI callouts. Queue status is separate. The reply field and
 send control are disabled and greyed out while queued or active; drafts survive
 status updates. They unlock on completion, failure, cancellation or disconnect.
 Screen readers receive accessible status text, and reduced-motion preferences
 are respected. Transient progress is never written into notes.
+
+Reading view displays discussions and agent activity without comment editing
+controls or **Retry**. **Stop** remains available. Switching to Reading view does
+not cancel requests started in the editor; they can finish and publish replies.
 
 AI Overview stores requests, final replies and outcomes in `mention-jobs.json`
 in its plugin directory. This can contain comment content and can be synchronized

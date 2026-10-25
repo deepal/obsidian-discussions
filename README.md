@@ -108,6 +108,11 @@ to build the plugin from source.
 In the panel's comment and reply forms, use **Ctrl+Enter** (Windows/Linux) or
 **Cmd+Enter** (macOS) to submit, and **Escape** to cancel. The buttons work too.
 
+Discussions are read-only in Reading view. Switch to the editor to add, reply,
+edit, or delete comments, delete a discussion, or retry an agent request.
+Agent activity and **Stop** remain available in Reading view, and requests
+started in the editor can finish and post their replies.
+
 Use **Edit** to change a comment's text. **Delete** removes that comment and
 all its nested replies after confirmation. To remove the whole panel, open
 the **…** menu and select **Delete discussion**. Deleting the last comment

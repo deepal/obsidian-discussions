@@ -2,17 +2,8 @@ import {
 	MarkdownPostProcessorContext,
 	MarkdownRenderChild,
 	MarkdownView,
-	TFile,
 } from "obsidian";
 import { parseDiscussionRegions } from "./parser.ts";
-import {
-	addCommentEdit,
-	deleteCommentEdit,
-	deleteDiscussionEdit,
-	editBodyEdit,
-	replyEdit,
-	type SourceEdit,
-} from "./comment-edit.ts";
 import { renderThread } from "./thread.ts";
 import type CommentBlockPlugin from "./main.ts";
 
@@ -69,62 +60,9 @@ export class ReadingViewManager {
 				settings: this.plugin.settings,
 				mentions: this.plugin.mentions,
 				sourcePath: ctx.sourcePath,
-				onReply: (target, body) =>
-					void this.applyEdit(ctx.sourcePath, (text) =>
-						replyEdit(text, target, {
-							id: this.plugin.newId(),
-							author: this.plugin.authorName(),
-							parentId: target.id ?? undefined,
-							body,
-						})
-					),
-				onEdit: (target, body) =>
-					void this.applyEdit(ctx.sourcePath, (text) =>
-						editBodyEdit(text, target, body)
-					),
-				onDelete: (target) =>
-					void this.applyEdit(ctx.sourcePath, (text) =>
-						deleteCommentEdit(text, target)
-					),
-				onDeleteDiscussion: () =>
-					void this.applyEdit(ctx.sourcePath, (text) =>
-						deleteDiscussionEdit(text, region)
-					),
-				onAddComment: (body) =>
-					void this.applyEdit(ctx.sourcePath, (text) =>
-						addCommentEdit(text, region, {
-							id: this.plugin.newId(),
-							author: this.plugin.authorName(),
-							body,
-						})
-					),
 			});
 		}
 	};
-
-	/**
-	 * Applies a computed source edit to the note. The edit is recomputed against
-	 * the file's current text inside `process`, so offsets stay correct even if
-	 * the note changed since the panel was rendered.
-	 */
-	private async applyEdit(
-		sourcePath: string,
-		compute: (text: string) => SourceEdit | null
-	): Promise<void> {
-		const file = this.plugin.app.vault.getAbstractFileByPath(sourcePath);
-		if (!(file instanceof TFile)) return;
-
-		let before = "";
-		let after = "";
-		await this.plugin.app.vault.process(file, (data) => {
-			before = after = data;
-			const edit = compute(data);
-			if (!edit) return data;
-			after = data.slice(0, edit.from) + edit.insert + data.slice(edit.to);
-			return after;
-		});
-		this.plugin.mentions.committed(sourcePath, before, after);
-	}
 
 	/** Re-renders open reading views (e.g. after a settings change). */
 	refresh(): void {

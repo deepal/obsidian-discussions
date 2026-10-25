@@ -1,3 +1,9 @@
+## [4.1.1](https://github.com/deepal/obsidian-discussions/compare/4.1.0...4.1.1) (2026-10-25)
+
+### Bug Fixes
+
+* render new discussions as empty panels ([b419931](https://github.com/deepal/obsidian-discussions/commit/b419931aade8729f7adcaa56e93c1622f4727059))
+
 ## [4.1.0](https://github.com/deepal/obsidian-discussions/compare/4.0.0...4.1.0) (2026-10-24)
 
 ### Features

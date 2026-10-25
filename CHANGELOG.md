@@ -1,3 +1,9 @@
+## [4.1.2](https://github.com/deepal/obsidian-discussions/compare/4.1.1...4.1.2) (2026-10-25)
+
+### Bug Fixes
+
+* correct nested agent activity and read-only discussions ([2b2cb4b](https://github.com/deepal/obsidian-discussions/commit/2b2cb4b20b9329e6d1302a44ce4cf3c56aad8496))
+
 ## [4.1.1](https://github.com/deepal/obsidian-discussions/compare/4.1.0...4.1.1) (2026-10-25)
 
 ### Bug Fixes

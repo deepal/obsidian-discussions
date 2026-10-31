@@ -1,3 +1,9 @@
+## [4.2.0](https://github.com/deepal/obsidian-discussions/compare/4.1.2...4.2.0) (2026-10-31)
+
+### Features
+
+* inherit note typography in comments and add syntax skill ([7547ed7](https://github.com/deepal/obsidian-discussions/commit/7547ed737dc046a432c160d9764d0bc77e2f70d8))
+
 ## [4.1.2](https://github.com/deepal/obsidian-discussions/compare/4.1.1...4.1.2) (2026-10-25)
 
 ### Bug Fixes

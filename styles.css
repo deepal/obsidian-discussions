@@ -15,48 +15,6 @@
 	margin: 0.5rem 0;
 }
 
-/* The widget lives inside the editor's `.cm-contentContainer`, so any inflated
-   line-height set there (e.g. a theme/snippet override) cascades in and spreads
-   the comment text. Pin it back to normal within the widget. !important is
-   needed to beat an `!important` container rule. */
-.cb-thread-widget,
-.cb-thread-widget .cb-comment__body,
-.cb-thread-widget .cb-comment__body > * {
-	line-height: var(--cb-line-height, var(--line-height-normal)) !important;
-}
-
-/* The CodeMirror editor sets `white-space: pre-wrap` on its content, which the
-   widget inherits — so the newlines between rendered block elements (</p>↵<ul>,
-   </li>↵<li>, …) render as literal line breaks and open a full-line gap between
-   every block. Reading view uses `white-space: normal` and has no such gap.
-   Force normal on the block containers that hold that inter-element whitespace —
-   but NOT on <pre>/<code>, which rely on preserved whitespace. */
-.cb-thread-widget .cb-comment__body,
-.cb-thread-widget .cb-comment__body p,
-.cb-thread-widget .cb-comment__body ul,
-.cb-thread-widget .cb-comment__body ol,
-.cb-thread-widget .cb-comment__body li {
-	white-space: normal !important;
-}
-
-/* The widget renders outside the reading-view (.markdown-preview-view) context,
-   so its paragraphs/lists fall back to oversized default margins that stack into
-   a wide gap. Zero them within the widget only — the inherent line spacing gives
-   enough paragraph separation, and reading view is left untouched. */
-.cb-thread-widget .cb-comment__body > *,
-.cb-thread-widget .cb-comment__body p,
-.cb-thread-widget .cb-comment__body ul,
-.cb-thread-widget .cb-comment__body ol,
-.cb-thread-widget .cb-comment__body li {
-	margin-top: 0 !important;
-	margin-bottom: 0 !important;
-}
-
-/* Guard against blank-line-only paragraphs rendering as an extra empty gap. */
-.cb-thread-widget .cb-comment__body p:empty {
-	display: none;
-}
-
 .cb-thread__header {
 	display: flex;
 	align-items: center;
@@ -151,20 +109,13 @@
 	font-size: 0.78em;
 }
 
-.cb-comment__body {
-	/* Match the note's standard body text so comments read like normal prose. */
-	font-size: var(--font-text-size);
-	line-height: var(--cb-line-height, var(--line-height-normal));
-	color: var(--text-normal);
-	font-family: var(--font-text);
-}
-
-.cb-comment__body > :first-child {
-	margin-top: 0;
-}
-
-.cb-comment__body > :last-child {
-	margin-bottom: 0;
+/* Inherit note typography and let themes/snippets style rendered Markdown.
+   Keep the existing opt-in line-height variable, with zero specificity so user
+   rules win. Normal whitespace prevents CodeMirror's inter-block newlines from
+   adding gaps; Markdown styles retain control of paragraphs, lists and code. */
+:where(.cb-comment__body) {
+	line-height: var(--cb-line-height, inherit);
+	white-space: normal;
 }
 
 .cb-comment__actions {

@@ -124,6 +124,11 @@ mode. To keep the tags visible throughout the editor, turn off **Enable comment 
 
 Try the [sample note](./docs/sample-note.md) by copying it into your vault.
 
+Comment text inherits the note's typography. Markdown comments use Obsidian's
+standard `.markdown-rendered` class, so theme styles and CSS snippets for rendered
+paragraphs, lists, links, and code apply in both the editor and Reading view.
+Use `.cb-comment__body` to target comment text specifically.
+
 ## Working with agents
 
 Use an agent that can read and edit your vault's Markdown files through your

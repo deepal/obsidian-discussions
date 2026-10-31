@@ -24,6 +24,9 @@ export function renderCommentBody(
 ): void {
 	const generation = (generations.get(el) ?? 0) + 1;
 	generations.set(el, generation);
+	// Use the note's Markdown styles, including when highlighted content is
+	// rendered offscreen and only its child nodes are moved into this element.
+	el.classList.toggle("markdown-rendered", asMarkdown);
 	if (!asMarkdown) {
 		highlightMentionText(el, body, tag);
 		return;

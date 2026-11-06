@@ -37,7 +37,7 @@ function regionSig(region: CommentRegion, settingsVersion: number): string {
  * Markdown renders and their listeners are cleaned up on `destroy()`.
  */
 class ThreadWidget extends WidgetType {
-	private component: Component | null = null;
+	private static readonly components = new WeakMap<HTMLElement, Component>();
 
 	constructor(
 		private readonly plugin: CommentBlockPlugin,
@@ -58,13 +58,14 @@ class ThreadWidget extends WidgetType {
 
 		const component = new Component();
 		component.load();
-		this.component = component;
+		ThreadWidget.components.set(el, component);
 
 		renderThread(el, this.region, {
 			app: this.plugin.app,
 			component,
 			settings: this.plugin.settings,
 			mentions: this.plugin.mentions,
+			gravatar: this.plugin.gravatar,
 			sourcePath: this.sourcePath,
 			editing: {
 				onReply: (target, body) =>
@@ -109,9 +110,9 @@ class ThreadWidget extends WidgetType {
 		this.plugin.mentions.committed(this.sourcePath, before, view.state.doc.toString());
 	}
 
-	destroy(): void {
-		this.component?.unload();
-		this.component = null;
+	destroy(el: HTMLElement): void {
+		ThreadWidget.components.get(el)?.unload();
+		ThreadWidget.components.delete(el);
 	}
 
 	ignoreEvent(): boolean {

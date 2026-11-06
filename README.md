@@ -26,6 +26,12 @@ review notes. No account or external discussion service is needed to store comme
 - See author initials, consistent avatar colours, and timestamps.
 - Add empty discussions to note templates.
 
+Set **Gravatar email** in the plugin settings and select **Apply** to show your
+Gravatar on comments and replies that match **Your name**. The email is stored
+on this device for this vault. The plugin sends a SHA-256 hash of the email to
+Gravatar over HTTPS to retrieve the image. Apply a blank value to use initials.
+Initials also appear while the photo loads or when it is unavailable.
+
 ## Supercharge agentic workflows in combination with AI Overview plugin
 
 ![Discussions plugin showing a threaded conversation in an Obsidian note](./docs/discussions-ai.gif)

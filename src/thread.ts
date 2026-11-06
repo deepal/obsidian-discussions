@@ -7,10 +7,12 @@ import {
 	type ParsedComment,
 } from "./parser.ts";
 import { renderCommentBody } from "./render.ts";
+import type { Gravatar } from "./gravatar.ts";
 import type { CommentBlockSettings } from "./settings.ts";
 
 export interface ThreadContext {
 	mentions?: MentionClient;
+	gravatar?: Gravatar;
 	app: App;
 	/** Lifecycle owner for async Markdown renders. */
 	component: Component;
@@ -158,8 +160,9 @@ function renderNode(parent: HTMLElement, node: CommentNode, ctx: ThreadContext, 
 	const wrap = parent.createDiv({ cls: "cb-comment" });
 
 	const avatar = wrap.createDiv({ cls: "cb-comment__avatar" });
-	avatar.setText(initials(author));
+	avatar.createSpan({ text: initials(author) });
 	avatar.style.setProperty("--cb-hue", String(hueFor(author)));
+	if (ctx.gravatar) ctx.component.register(ctx.gravatar.bind(avatar, comment.author));
 
 	const main = wrap.createDiv({ cls: "cb-comment__main" });
 

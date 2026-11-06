@@ -5,6 +5,7 @@ import { Editor, MarkdownView, Plugin } from "obsidian";
 import { createEditorExtension, rebuildEffect } from "./editor-extension.ts";
 import { ReadingViewManager } from "./reading-view.ts";
 import { newDiscussionBlock } from "./comment-edit.ts";
+import { Gravatar } from "./gravatar.ts";
 import {
 	CommentBlockSettings,
 	CommentBlockSettingTab,
@@ -19,11 +20,16 @@ export default class CommentBlockPlugin extends Plugin {
 	settingsVersion = 0;
 
 	mentions!: MentionClient;
+	gravatar!: Gravatar;
 
 	private readingManager!: ReadingViewManager;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
+		this.gravatar = new Gravatar(this.app, `${this.manifest.id}:gravatar-email`, () => {
+			const name = this.settings.username;
+			return name && name !== "anonymous" ? name : null;
+		});
 
 		this.mentions = this.addChild(new MentionClient(this, "comment-block", discussionFormat, () => this.settings.enabled));
 		this.mentions.load();
@@ -45,6 +51,7 @@ export default class CommentBlockPlugin extends Plugin {
 
 	onunload(): void {
 		this.readingManager?.destroy();
+		this.gravatar.destroy();
 		document.body.classList.remove("cb-active");
 	}
 

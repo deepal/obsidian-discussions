@@ -59,6 +59,7 @@ export class ReadingViewManager {
 				component: child,
 				settings: this.plugin.settings,
 				mentions: this.plugin.mentions,
+				gravatar: this.plugin.gravatar,
 				sourcePath: ctx.sourcePath,
 			});
 		}

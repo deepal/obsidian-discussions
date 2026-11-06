@@ -10,7 +10,7 @@ const hostCode = `
  }
  export class Plugin extends Component {
   commands = []; extensions = [];
-  constructor(app) { super(); this.app = app; }
+  constructor(app) { super(); this.app = app; this.manifest = { id: "comment-block" }; }
   async loadData() { return null; }
   registerEditorExtension(extension) { this.extensions.push(extension); }
   registerMarkdownPostProcessor() {}
@@ -49,7 +49,7 @@ globalThis.document = { body: { classList: { toggle() {} } } };
 
 async function fixture(doc, cursor) {
 	const events = { on() { return {}; }, trigger() {} };
-	const plugin = new Plugin({ workspace: events, vault: events });
+	const plugin = new Plugin({ workspace: events, vault: events, loadLocalStorage: () => null });
 	await plugin.onload();
 	assert.equal(plugin.commands.length, 1);
 	const command = plugin.commands[0];

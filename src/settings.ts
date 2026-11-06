@@ -35,6 +35,41 @@ export class CommentBlockSettingTab extends PluginSettingTab {
 				control: { type: "text", key: "username", placeholder: "Alice" },
 			},
 			{
+				name: "Gravatar email",
+				desc: "Show your Gravatar on comments with your name. The email stays on this device and Gravatar receives its hash. Apply a blank value to use initials.",
+				render: (setting) => {
+					const gravatar = this.plugin.gravatar;
+					const status = setting.descEl.createDiv({ attr: { role: "status" } });
+					setting.addText((text) => {
+						const input = text.setValue(gravatar.getEmail()).inputEl;
+						input.type = "email";
+						input.setAttribute("aria-label", "Gravatar email");
+						const apply = () => {
+							if (!input.validity.valid) {
+								input.setAttribute("aria-invalid", "true");
+								status.setText("Enter a valid email address.");
+								input.focus();
+								return;
+							}
+							gravatar.setEmail(input.value);
+							input.value = gravatar.getEmail();
+							status.setText(input.value ? "Email saved." : "Gravatar disabled.");
+						};
+						text.onChange(() => {
+							input.removeAttribute("aria-invalid");
+							status.setText("");
+						});
+						input.addEventListener("keydown", (event) => {
+							if (event.key !== "Enter" || event.isComposing) return;
+							event.preventDefault();
+							apply();
+						});
+						setting.addButton((button) => button.setButtonText("Apply").setCta()
+							.setClass("cb-gravatar-apply").onClick(apply));
+					});
+				},
+			},
+			{
 				name: "Render Markdown in comments",
 				desc: "Format comment bodies as Markdown instead of plain text.",
 				render: (setting) => {
@@ -103,6 +138,7 @@ export class CommentBlockSettingTab extends PluginSettingTab {
 	async setControlValue(key: string, value: unknown): Promise<void> {
 		if (key !== "username" || typeof value !== "string") return;
 		this.plugin.settings.username = value.trim();
+		this.plugin.gravatar.refresh();
 		await this.plugin.saveSettings();
 	}
 }

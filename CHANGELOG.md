@@ -1,3 +1,9 @@
+## [4.4.0](https://github.com/deepal/obsidian-discussions/compare/4.3.0...4.4.0) (2026-11-06)
+
+### Features
+
+* show discussion badges in the file explorer ([2bbdb5d](https://github.com/deepal/obsidian-discussions/commit/2bbdb5d7343051e0e4e2925e6ea5702dac2e21b4))
+
 ## [4.3.0](https://github.com/deepal/obsidian-discussions/compare/4.2.0...4.3.0) (2026-11-06)
 
 ### Features

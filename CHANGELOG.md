@@ -1,3 +1,9 @@
+## [4.3.0](https://github.com/deepal/obsidian-discussions/compare/4.2.0...4.3.0) (2026-11-06)
+
+### Features
+
+* add gravatar avatars to discussions ([d50a96e](https://github.com/deepal/obsidian-discussions/commit/d50a96e34a59e069ad69dc557f0951a014c0407a))
+
 ## [4.2.0](https://github.com/deepal/obsidian-discussions/compare/4.1.2...4.2.0) (2026-10-31)
 
 ### Features

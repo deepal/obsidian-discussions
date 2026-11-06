@@ -4,10 +4,29 @@ import assert from "node:assert/strict";
 // Import the TS source directly via Node's type-stripping (see package.json test script).
 import {
 	parseComments,
+	hasDiscussionComments,
 	groupRegions,
 	parseDiscussionRegions,
 	buildForest,
 } from "../src/parser.ts";
+
+test("presence follows the parser for empty, literal, and populated discussions", () => {
+	const comment = "<COMMENT parent_id=\"1\">Reply</COMMENT >";
+	for (const [source, present] of [
+		["<discussion></discussion>", false],
+		["<comment id=\"1\">Incomplete", false],
+		["`" + comment + "`", false],
+		["~~~html\n" + comment + "\n~~~", false],
+		["```html\n" + comment, false],
+		["`````html\n" + comment + "\n`````\n" + comment, true],
+		["``" + comment + "`` " + comment, true],
+		["<discussion>\n" + comment + "\n</discussion>", true],
+		["<comment></comment>", true],
+	]) {
+		assert.equal(hasDiscussionComments(source), present, source);
+		assert.equal(parseComments(source).length > 0, present, source);
+	}
+});
 
 test("parses a single comment's attributes and body", () => {
 	const text = `<comment id="1" author="bob">\nhello world\n</comment>`;

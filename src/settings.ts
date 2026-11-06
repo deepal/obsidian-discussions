@@ -30,6 +30,14 @@ export class CommentBlockSettingTab extends PluginSettingTab {
 				},
 			},
 			{
+				name: "Show discussion comments in File Explorer",
+				desc: "Mark notes that contain discussion comments.",
+				render: (setting) => {
+					setting.addToggle(t => t.setValue(this.plugin.settings.showExplorerBadges)
+						.onChange(value => this.plugin.setExplorerBadges(value)));
+				},
+			},
+			{
 				name: "Your name",
 				desc: "Stamped as the author on comments you create.",
 				control: { type: "text", key: "username", placeholder: "Alice" },

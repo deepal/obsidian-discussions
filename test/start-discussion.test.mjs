@@ -5,7 +5,9 @@ import { build } from "esbuild";
 const hostCode = `
  export class Component {
   load() { this.onload?.(); }
+  unload() { this.onunload?.(); }
   addChild(child) { return child; }
+  register() {}
   registerEvent() {}
  }
  export class Plugin extends Component {
@@ -19,7 +21,8 @@ const hostCode = `
  }
  export class PluginSettingTab {}
  export class MarkdownView {} export class MarkdownRenderChild {}
- export class TFile {} export class Notice {}
+ export class TFile {} export class TFolder {} export class Vault {} export class Notice {}
+ export function setTooltip() {}
  export class Menu {} export class Scope {}
  export const MarkdownRenderer = {};
  export function setIcon() {}

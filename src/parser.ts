@@ -59,6 +59,15 @@ export interface CommentNode {
 	children: CommentNode[];
 }
 
+const FENCE_RE = /^[ \t]*(`{3,}|~{3,})[^\n]*\n[\s\S]*?(?:^[ \t]*\1[ \t]*$|(?![\s\S]))/gm;
+const INLINE_CODE_RE = /(`+)(?:(?!\1)[^\n])*?\1/g;
+
+function* matches(pattern: RegExp, text: string): Generator<RegExpExecArray, void> {
+	const re = new RegExp(pattern);
+	let match: RegExpExecArray | null;
+	while ((match = re.exec(text)) !== null) yield match;
+}
+
 /**
  * Returns char ranges `[start, end)` that should be treated as code (fenced
  * code blocks and inline code spans) so `<comment>` inside them is ignored.
@@ -69,17 +78,14 @@ function findCodeRanges(text: string): Array<[number, number]> {
 	// Fenced code blocks: ``` or ~~~ fences (allow leading whitespace). The
 	// block runs to a matching closing fence line, or to end-of-input if the
 	// fence is never closed (`(?![\s\S])` asserts end of string).
-	const fence = /^[ \t]*(`{3,}|~{3,})[^\n]*\n[\s\S]*?(?:^[ \t]*\1[ \t]*$|(?![\s\S]))/gm;
-	let m: RegExpExecArray | null;
-	while ((m = fence.exec(text)) !== null) {
+	for (const m of matches(FENCE_RE, text)) {
 		ranges.push([m.index, m.index + m[0].length]);
 	}
 
 	// Inline code spans: matched runs of backticks on a single line. Restricted
 	// to a single line (`[^\n]`) so an unbalanced backtick can't pair with one
 	// lines away and engulf a whole region (e.g. `<comment>` blocks below it).
-	const inline = /(`+)(?:(?!\1)[^\n])*?\1/g;
-	while ((m = inline.exec(text)) !== null) {
+	for (const m of matches(INLINE_CODE_RE, text)) {
 		const start = m.index;
 		const end = start + m[0].length;
 		if (!ranges.some(([s, e]) => start >= s && end <= e)) {
@@ -131,6 +137,47 @@ function parseAttrs(attrs: string): Record<string, string> {
 // tree structure is expressed via `parent_id`, never by physical nesting.
 const COMMENT_RE = /<comment\b([^>]*)>([\s\S]*?)<\/comment\s*>/gi;
 
+/** Walk code only as far as needed to classify each successive comment opener. */
+export function hasDiscussionComments(text: string): boolean {
+	const fence = new RegExp(FENCE_RE.source, "my");
+	const lineBreak = /[\n\r\u2028\u2029]/g;
+	let nextFenceLine = 0;
+	let fenceEnd = 0;
+	let inlineLine = -1;
+	let inlineSpans: Generator<RegExpExecArray, void> | undefined;
+	let span: RegExpExecArray | void = undefined;
+
+	for (const comment of matches(COMMENT_RE, text)) {
+		const from = comment.index;
+		while (nextFenceLine <= from) {
+			fence.lastIndex = nextFenceLine;
+			if (fence.test(text)) {
+				fenceEnd = fence.lastIndex;
+				nextFenceLine = fenceEnd;
+			} else {
+				lineBreak.lastIndex = nextFenceLine;
+				const end = lineBreak.exec(text);
+				nextFenceLine = end ? lineBreak.lastIndex : text.length;
+			}
+		}
+		if (from < fenceEnd) continue;
+
+		const lineStart = text.lastIndexOf("\n", from - 1) + 1;
+		if (lineStart !== inlineLine) {
+			inlineLine = lineStart;
+			const lineEnd = text.indexOf("\n", from);
+			inlineSpans = matches(INLINE_CODE_RE, text.slice(lineStart, lineEnd === -1 ? text.length : lineEnd));
+			span = inlineSpans.next().value;
+		}
+		const offset = from - lineStart;
+		while (span && span.index + span[0].length <= offset) {
+			span = inlineSpans?.next().value;
+		}
+		if (!span || span.index > offset) return true;
+	}
+	return false;
+}
+
 /**
  * Parses all `<comment>...</comment>` blocks in `text`, skipping any that fall
  * inside fenced code blocks or inline code spans. Results are in document
@@ -141,9 +188,7 @@ export function parseComments(text: string): ParsedComment[] {
 	const lineOf = makeLineLookup(text);
 	const comments: ParsedComment[] = [];
 
-	let m: RegExpExecArray | null;
-	COMMENT_RE.lastIndex = 0;
-	while ((m = COMMENT_RE.exec(text)) !== null) {
+	for (const m of matches(COMMENT_RE, text)) {
 		const from = m.index;
 		const to = from + m[0].length;
 		if (isInside(codeRanges, from)) continue;

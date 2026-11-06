@@ -167,6 +167,7 @@ instruction with your request:
 | Setting | Default | What it does |
 | --- | --- | --- |
 | **Enable comment threads** | On | Displays discussion panels. Turn off to stop rendering them. |
+| **Show discussion comments in File Explorer** | Off | Marks saved notes containing a discussion comment, including unopened notes. |
 | **Your name** | Blank | Sets the author name for new comments and replies; falls back to `anonymous`. |
 | **Render Markdown in comments** | On | Formats comment bodies as Markdown. Turn off to display plain text. |
 

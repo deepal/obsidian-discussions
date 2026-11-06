@@ -1,6 +1,7 @@
 export interface CommentBlockSettings {
 	/** Master toggle for rendering threads. When off, raw tags are left as-is. */
 	enabled: boolean;
+	showExplorerBadges: boolean;
 	/** Author name stamped on comments created via the command or Reply button. */
 	username: string;
 	/** Render comment bodies as Markdown (vs. plain text). */
@@ -9,6 +10,7 @@ export interface CommentBlockSettings {
 
 export const DEFAULT_SETTINGS: CommentBlockSettings = {
 	enabled: true,
+	showExplorerBadges: false,
 	username: "",
 	renderMarkdown: true,
 };
@@ -19,6 +21,7 @@ export function normalizeSettings(raw: unknown): CommentBlockSettings {
 		? raw as Record<string, unknown> : {};
 	return {
 		enabled: typeof data.enabled === "boolean" ? data.enabled : DEFAULT_SETTINGS.enabled,
+		showExplorerBadges: data.showExplorerBadges === true,
 		username: typeof data.username === "string" ? data.username.trim() : DEFAULT_SETTINGS.username,
 		renderMarkdown: typeof data.renderMarkdown === "boolean" ? data.renderMarkdown : DEFAULT_SETTINGS.renderMarkdown,
 	};

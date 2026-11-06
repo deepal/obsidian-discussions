@@ -1,3 +1,5 @@
+import { ExplorerBadges } from "./explorer-badges.ts";
+import { hasDiscussionComments } from "./parser.ts";
 import { MentionClient } from "./mention-client.ts";
 import { discussionFormat } from "./mention-format.ts";
 import { mentionExtension } from "./mention-extension.ts";
@@ -23,6 +25,7 @@ export default class CommentBlockPlugin extends Plugin {
 	gravatar!: Gravatar;
 
 	private readingManager!: ReadingViewManager;
+	private explorerBadges?: ExplorerBadges;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
@@ -39,6 +42,10 @@ export default class CommentBlockPlugin extends Plugin {
 		this.registerEditorExtension(createEditorExtension(this));
 		this.registerMarkdownPostProcessor(this.readingManager.handleBlock);
 
+		this.explorerBadges = new ExplorerBadges(this.app, `${this.manifest.id}:explorer-badges`,
+			"cb-explorer-badge", "list-tree", "Has discussion comments", hasDiscussionComments);
+		this.register(() => this.explorerBadges?.setEnabled(false));
+		this.explorerBadges.setEnabled(this.settings.showExplorerBadges);
 		this.addSettingTab(new CommentBlockSettingTab(this.app, this));
 		this.updateBodyClass();
 
@@ -117,6 +124,12 @@ export default class CommentBlockPlugin extends Plugin {
 
 	async loadSettings(): Promise<void> {
 		this.settings = normalizeSettings(await this.loadData());
+	}
+
+	async setExplorerBadges(enabled: boolean): Promise<void> {
+		this.settings.showExplorerBadges = enabled;
+		this.explorerBadges?.setEnabled(enabled);
+		await this.saveSettings();
 	}
 
 	async saveSettings(): Promise<void> {
